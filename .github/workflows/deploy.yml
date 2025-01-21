@@ -1,39 +1,45 @@
-name: PHP Composer
+name: Run PHP Server
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main" ]
-
-permissions:
-  contents: read
+    branches:
+      - main
 
 jobs:
-  build:
-
+  php-server:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout the code
+        uses: actions/checkout@v2
 
-    - name: Validate composer.json and composer.lock
-      run: composer validate --strict
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'  # Adjust PHP version as needed
 
-    - name: Cache Composer packages
-      id: composer-cache
-      uses: actions/cache@v3
-      with:
-        path: vendor
-        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-php-
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y php-cli php-curl php-mbstring php-xml php-zip  # Install PHP dependencies
+          composer install  # Run Composer to install any PHP packages if a composer.json exists
 
-    - name: Install dependencies
-      run: composer install --prefer-dist --no-progress
+      - name: Start PHP built-in server
+        run: |
+          php -S 0.0.0.0:8000 -t public &  # Start the PHP built-in server
 
-    # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
-    # Docs: https://getcomposer.org/doc/articles/scripts.md
+      - name: Wait for server to start
+        run: sleep 10  # Adjust this time if necessary
 
-    # - name: Run test suite
-    #   run: composer run-script test
+      - name: Test server is running
+        run: |
+          curl http://localhost:8000  # You can adjust this URL as needed to check server status
+
+      - name: Run PHPUnit tests (if applicable)
+        run: |
+          if [ -f "phpunit.xml" ]; then
+            php vendor/bin/phpunit --coverage-text  # Run PHPUnit if tests are available
+          fi
