@@ -28,11 +28,9 @@ jobs:
 
       - name: Start PHP built-in server
         run: |
-          php -S 0.0.0.0:8000 -t public &  # Start the PHP built-in server
-
-      - name: Wait for server to start
-        run: sleep 10  # Adjust this time if necessary
+          nohup php -S 0.0.0.0:8000 -t public &  # Start the PHP built-in server in the background
+          sleep 5  # Wait a little longer to give the server time to start
 
       - name: Test server is running
         run: |
-          curl http://localhost:8000  # You can adjust this URL as needed to check server status
+          curl --retry 10 --retry-delay 5 http://localhost:8000  # Retry a few times with a delay to wait for server
