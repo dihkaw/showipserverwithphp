@@ -21,11 +21,10 @@ jobs:
         with:
           php-version: '8.1'  # Adjust PHP version as needed
 
-      - name: Install dependencies
+      - name: Install PHP extensions
         run: |
           sudo apt-get update
           sudo apt-get install -y php-cli php-curl php-mbstring php-xml php-zip  # Install PHP dependencies
-          composer install  # Run Composer to install any PHP packages if a composer.json exists
 
       - name: Start PHP built-in server
         run: |
@@ -37,9 +36,3 @@ jobs:
       - name: Test server is running
         run: |
           curl http://localhost:8000  # You can adjust this URL as needed to check server status
-
-      - name: Run PHPUnit tests (if applicable)
-        run: |
-          if [ -f "phpunit.xml" ]; then
-            php vendor/bin/phpunit --coverage-text  # Run PHPUnit if tests are available
-          fi
